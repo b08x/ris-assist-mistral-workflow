@@ -1,0 +1,161 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ris-assist-mistral-workflow"
+version = "0.2.0"
+description = "Radiology Information Systems Multi-Agent Workflow for Mistral AI Studio"
+readme = "README.md"
+license = {text = "Proprietary"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Radiology IT Support Team", email = "support@radiology-it.example.com"}
+]
+keywords = [
+    "radiology",
+    "ris",
+    "pacs",
+    "healthcare-it",
+    "multi-agent",
+    "ai",
+    "mistral",
+    "workflow",
+    "automation"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Scientific/Engineering :: Medical Science Apps",
+    "Framework :: AsyncIO",
+    "Typing :: Typed"
+]
+dependencies = [
+    "mistralai-agents>=0.1.0",
+    "asyncio-throttle>=1.0.2",
+    "pydantic>=2.0.0",
+    "aiohttp>=3.8.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "types-aiohttp>=0.1.0",
+]
+docs = [
+    "mkdocs>=1.4.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings-python>=1.0.0",
+]
+docx = [
+    "python-docx>=0.8.11",
+    "Pillow>=9.0.0",
+]
+all = [
+    "ris-assist-mistral-workflow[dev]",
+    "ris-assist-mistral-workflow[docs]",
+    "ris-assist-mistral-workflow[docx]",
+]
+
+[project.scripts]
+ris-assist = "workflows.ris_multi_agent_workflow:main"
+
+[project.urls]
+Homepage = "https://github.com/b08x/ris-assist-mistral-workflow"
+Documentation = "https://github.com/b08x/ris-assist-mistral-workflow#readme"
+Repository = "https://github.com/b08x/ris-assist-mistral-workflow.git"
+Issues = "https://github.com/b08x/ris-assist-mistral-workflow/issues"
+Original = "https://github.com/b08x/ris-assist-opengap"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agents*", "workflows*", "config*", "skills*", "tools*", "tests*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml", "*.json", "*.md", "*.txt"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+    | \.venv
+    | build
+    | dist
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+]
+
+[tool.ruff.isort]
+known-first-party = ["agents", "workflows", "config", "skills", "tools", "tests"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["mistralai.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["agents", "workflows"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
+
+[tool.bandit]
+skips = ["B101"]  # assert_used
