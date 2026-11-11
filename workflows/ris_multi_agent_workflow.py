@@ -9,6 +9,16 @@ specialist agents, aggregates results, and hands every artifact to a human appro
 Model: claude-opus-4-6 (fallback: claude-sonnet-4-5)
 """
 
+import sys
+from pathlib import Path
+
+# Ensure the parent directory is in sys.path for imports when running as a script
+# This handles the case when running: python workflows/ris_multi_agent_workflow.py
+if __name__ == "__main__" and __package__ is None:
+    script_dir = Path(__file__).parent.parent
+    if str(script_dir) not in sys.path:
+        sys.path.insert(0, str(script_dir))
+
 import asyncio
 from dataclasses import asdict
 from typing import Any, Dict, List, Optional
