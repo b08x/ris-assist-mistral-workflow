@@ -1,0 +1,220 @@
+# Mistral AI Studio Deployment Configuration
+# For Radiology Information Systems Multi-Agent Workflow
+#
+# Usage:
+#   agents deploy --config config/deployment.yaml
+#   agents serve --config config/deployment.yaml
+
+name: ris-assist-workflow
+version: 0.2.0
+description: |
+  Radiology IT overnight support assistant as a Mistral AI Studio multi-agent
+  orchestration. Classifies intake, delegates specialist drafting to three
+  sub-agents (triage, comms, kb), keeps explainer and onboarding as direct skills,
+  aggregates structured JSON contracts, and hands every artifact to a human
+  approver. Drafts and recommends only; never executes.
+
+# Author and metadata
+author: "Radiology IT Support Team"
+license: proprietary
+ported_from: github.com/b08x/ris-assist-opengap
+
+# Model configuration
+model:
+  preferred: mistral-large-4
+  fallback:
+    - mistral-small-4
+  constraints:
+    temperature: 0.2
+    max_tokens: 8192
+
+# Runtime configuration
+runtime:
+  max_turns: 50
+  timeout: 300  # seconds
+  session:
+    max_duration: 86400  # 24 hours
+    idle_timeout: 14400  # 4 hours
+
+# Compliance configuration (from agent.yaml compliance section)
+compliance:
+  risk_tier: standard
+  frameworks:
+    - HIPAA-adjacent handling (no PHI ingested; drafts only)
+    - ITSM change control (no state-changing actions)
+    - KCS-style knowledge capture
+  supervision:
+    designated_supervisor: "account lead (human)"
+    review_cadence: quarterly
+    human_in_the_loop: always
+    escalation_triggers:
+      - confidence_below: 0.7
+      - error_detected: true
+    override_capability: false
+    kill_switch: true
+  recordkeeping:
+    audit_logging: true
+    log_format: structured_json
+    retention_period: 1y
+    log_contents:
+      - decision_pathways
+      - model_version
+      - timestamps
+    immutable: true
+
+# Agent definitions
+agents:
+  # Orchestrator agent
+  ris-assist:
+    description: |
+      Overnight radiology IT support assistant orchestrator. Classifies intake,
+      delegates specialist drafting to three sub-agents (triage, comms, kb),
+      keeps explainer and onboarding as direct skills, aggregates structured
+      JSON contracts, and hands every artifact to a human approver.
+    model:
+      preferred: mistral-large-4
+      fallback:
+        - mistral-small-4
+      constraints:
+        temperature: 0.2
+        max_tokens: 8192
+    skills:
+      - explainer
+      - onboarding
+    delegation:
+      mode: auto
+      triggers:
+        - "vague ticket, severity, escalation"
+        - "where should this go"
+        - "is this worth paging someone"
+        - "justify a severity"
+        - "escalation package"
+        - "downtime, MIM, turnover, comms-config"
+        - "resolved incident, KB article"
+        - "domain question, new-analyst path"
+        - "site profile interview or edit"
+
+  # Triage subagent
+  triage:
+    description: |
+      Differential-driven ticket clarification specialist. Asks the single
+      most discriminating question at a time until the ticket is routable,
+      then produces a triage artifact with scope, timeline, confidence-marked
+      differential, recommended queue, and SLA-vocabulary severity justification.
+    model:
+      preferred: mistral-small-4
+      fallback:
+        - mistral-small-4
+      constraints:
+        temperature: 0.2
+        max_tokens: 4096
+    skills:
+      - troubleshoot
+    delegation:
+      mode: manual
+      triggers:
+        - "vague or incomplete ticket needs a discriminating question"
+        - "where should this go"
+        - "is this worth paging someone"
+        - "justify a severity"
+        - "escalation package"
+
+  # Communications subagent
+  comms:
+    description: |
+      Incident communication drafting specialist - downtime alerts, MIM
+      cadence updates, vendor tickets, change narratives, shift turnover -
+      matched to audience register, with outstanding-items discipline.
+    model:
+      preferred: mistral-small-4
+      fallback:
+        - mistral-small-4
+      constraints:
+        temperature: 0.2
+        max_tokens: 8192
+    skills:
+      - comms
+    delegation:
+      mode: manual
+      triggers:
+        - "draft a downtime notice"
+        - "we need to tell clinical"
+        - "send an update on the outage"
+        - "all clear"
+        - "MIM update"
+        - "vendor ticket"
+        - "shift turnover"
+        - "tune notification templates"
+
+  # Knowledge Base subagent
+  kb:
+    description: |
+      Knowledge capture specialist. Turns a resolved ticket or worklog into
+      a ServiceNow-importable knowledge base article - triage-first HTML draft,
+      optionally rendered to .docx - with outstanding-items and suggestions-
+      separation discipline, plus recurring-incident gap detection and stale-
+      article flagging in manual mode.
+    model:
+      preferred: mistral-small-4
+      fallback:
+        - mistral-large-4
+      constraints:
+        temperature: 0.2
+        max_tokens: 16384
+    skills:
+      - knowledge
+    delegation:
+      mode: manual
+      triggers:
+        - "resolved incident worth writing up"
+        - "turn this into a KB article"
+        - "same question keeps recurring"
+        - "is there an article for this"
+        - "change or upgrade may have staled articles"
+
+# Approval gates (from DUTIES.md)
+approval_gates:
+  notification_release:
+    description: "Required before any communication draft leaves the session"
+    required: true
+    approvers:
+      - IT_Manager
+      - Clinical_Lead
+    
+  kb_submission:
+    description: "Required before KB article is uploaded to ServiceNow"
+    required: true
+    approvers:
+      - KB_Manager
+      - IT_Lead
+    
+  severity_commit:
+    description: "Required before severity is recorded on a ticket"
+    required: true
+    approvers:
+      - IT_Manager
+      - Clinical_Lead
+    
+  escalation_page:
+    description: "Required before paging on-call senior"
+    required: true
+    approvers:
+      - IT_Manager
+
+# Tags
+tags:
+  - radiology-it
+  - ris
+  - pacs
+  - hl7-conceptual
+  - itsm
+  - kcs
+  - overnight-support
+  - multi-agent
+  - mistral-studio
+
+# Environment variables (for local development)
+environment:
+  SITE_PROFILE_PATH: "/path/to/site/profile.yaml"
+  COMMS_PROFILE_PATH: "/path/to/comms/profile.yaml"
+  OUTPUT_DIR: "/tmp/ris-assist-output"
