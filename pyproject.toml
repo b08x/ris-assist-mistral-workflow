@@ -134,28 +134,8 @@ strict_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 
-[[tool.mypy.overrides]]
-module = ["mistralai.*"]
-ignore_missing_imports = true
 
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-python_functions = ["test_*"]
-addopts = "-v --tb=short"
-
-[tool.coverage.run]
-source = ["agents", "workflows"]
-branch = true
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "raise NotImplementedError",
-    "if TYPE_CHECKING:",
-]
-
-[tool.bandit]
-skips = ["B101"]  # assert_used
+# Mistral AI Agents SDK Configuration
+# See: https://docs.mistral.ai/studio/agents/overview
+[tool.mistralai.agents]
+entrypoint = "main:agent"
