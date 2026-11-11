@@ -1,0 +1,76 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Testing
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Output files
+/tmp/
+output/
+*.html
+*.docx
+
+# Local configuration
+*.local.yaml
+*.local.json
+.env.local
+.env
+
+# Logs
+*.log
+logs/
+
+# Site profiles (never committed or built into image)
+site_profile*
+comms_profile*
+*.profile.yaml
+
+# Documentation
+*.md
+*.rst
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
