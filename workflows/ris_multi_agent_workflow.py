@@ -239,7 +239,7 @@ class RISOrchestrator:
         # Determine audience from context or input
         audience = context.get("audience")
         if isinstance(audience, str):
-            audience = Audience(audience.upper())
+            audience = getattr(Audience, audience.upper())
         
         # Get previous communications if this is an update
         previous_comms = context.get("previous_communications", [])
