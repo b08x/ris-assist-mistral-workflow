@@ -50,9 +50,10 @@ ENV SITE_PROFILE_PATH="/app/site_profile.yaml" \
 # Expose port for potential web interface
 EXPOSE 8000
 
-# Set the entry point
-ENTRYPOINT ["python", "workflows/ris_multi_agent_workflow.py"]
+# Set the entry point for Mistral Managed Workflow Deployment
+# Uses agents serve to run a long-lived service that handles incoming requests
+ENTRYPOINT ["agents", "serve", "--config", "config/deployment.yaml"]
 
-# Alternative entry point for agents serve
-# To use: docker run -p 8000:8000 ris-assist-mistral-workflow agents serve --config config/deployment.yaml
-CMD ["--help"]
+# Alternative: For direct execution (non-managed deployment)
+# ENTRYPOINT ["python", "main.py"]
+# CMD ["--help"]
